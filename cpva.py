@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 import chess
 import chess.engine
 
@@ -25,6 +27,30 @@ def pawn_score_to_string(pawn_score):
     return "{:.2f}".format(pawn_score)
 
 
+@contextmanager
+def with_clean_castling_rights(board):
+    """
+    Ensures that the board has clean castling rights.
+    """
+    castling_rights = board.castling_rights
+    board.castling_rights = board.clean_castling_rights()
+    yield
+    board.castling_rights = castling_rights
+
+
+@contextmanager
+def without_piece_at(board, square):
+    """
+    Remove the piece at the square on the board, and yield the piece.
+    Afterwards, put the piece back. Also fixes castling rights when
+    removing a rook.
+    """
+    piece = board.remove_piece_at(square)
+    with with_clean_castling_rights(board):
+        yield piece
+    board.set_piece_at(square, piece)
+
+
 def analyze_piece_values(board):
     """
     Return a dictionary mapping square to the piece value. The value
@@ -36,19 +62,13 @@ def analyze_piece_values(board):
     board_value = evaluate_board(board)
     for square, piece in board.piece_map().items():
         # print(f"Analyzing {piece.symbol()} at {chess.square_name(square)}")
-        piece = board.remove_piece_at(square)
-        if piece.piece_type == chess.ROOK:
-            castling_rights = board.castling_rights
-            board.castling_rights = board.clean_castling_rights()
-        if board.is_valid():
-            board_without_piece_value = evaluate_board(board)
-            piece_values[square] = board_value - board_without_piece_value
-        else:
-            piece_values[square] = None
-        if piece.piece_type == chess.ROOK:
-            board.castling_rights = castling_rights
-        board.set_piece_at(square, piece)
-
+        with without_piece_at(board, square):
+            if board.is_valid():
+                board_without_piece_value = evaluate_board(board)
+                piece_values[square] = board_value - board_without_piece_value
+            else:
+                piece_values[square] = None
+    
     return piece_values
 
 
