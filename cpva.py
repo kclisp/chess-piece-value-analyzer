@@ -9,12 +9,21 @@ engine = chess.engine.SimpleEngine.popen_uci(
 )
 
 
+# Start a new game for each analysis; seems to perform better
+# according to stockfish at higher depth
+GAME = 0
+def new_game():
+    global GAME
+    GAME += 1
+    return GAME
+
+
 def evaluate_board(board, depth=10):
     """
     Evaluate the board at the given depth. Returns the pawn score,
     with mate having a score of 100.
     """
-    info = engine.analyse(board, chess.engine.Limit(depth=depth))
+    info = engine.analyse(board, chess.engine.Limit(depth=depth), game=new_game())
     score = info["score"].white()
     pawn_score = score.score(mate_score=10000) / 100.
     return pawn_score
@@ -84,7 +93,6 @@ def print_piece_values(board, piece_values):
 #     pass
 
 
-# fen = "r1bq1rk1/pp1pbpp1/2n4p/2pBp1N1/4P2P/3P4/PPP2PP1/R1BQK2R b KQ - 0 9"
 # fen = "r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 3 3"
 fen = "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4"
 
