@@ -61,13 +61,8 @@ def analyze_piece_values(board):
     
     board_value = evaluate_board(board)
     for square, piece in board.piece_map().items():
-        # print(f"Analyzing {piece.symbol()} at {chess.square_name(square)}")
         with without_piece_at(board, square):
-            if board.is_valid():
-                board_without_piece_value = evaluate_board(board)
-                piece_values[square] = board_value - board_without_piece_value
-            else:
-                piece_values[square] = None
+            piece_values[square] = board_value - evaluate_board(board) if board.is_valid() else None
     
     return piece_values
 
