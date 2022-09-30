@@ -4,7 +4,7 @@ import chess
 import chess.engine
 
 
-DEPTH = 10
+DEPTH = 12
 ENGINE = chess.engine.SimpleEngine.popen_uci(
     "stockfish_15_linux_x64_popcnt/stockfish_15_x64_popcnt"
 )
