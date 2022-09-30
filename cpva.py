@@ -4,7 +4,8 @@ import chess
 import chess.engine
 
 
-engine = chess.engine.SimpleEngine.popen_uci(
+DEPTH = 10
+ENGINE = chess.engine.SimpleEngine.popen_uci(
     "stockfish_15_linux_x64_popcnt/stockfish_15_x64_popcnt"
 )
 
@@ -18,12 +19,12 @@ def new_game():
     return GAME
 
 
-def evaluate_board(board, depth=10):
+def evaluate_board(board, depth=DEPTH):
     """
     Evaluate the board at the given depth. Returns the pawn score,
     with mate having a score of 100.
     """
-    info = engine.analyse(board, chess.engine.Limit(depth=depth), game=new_game())
+    info = ENGINE.analyse(board, chess.engine.Limit(depth=depth), game=new_game())
     score = info["score"].white()
     pawn_score = score.score(mate_score=10000) / 100.
     return pawn_score
@@ -93,15 +94,15 @@ def print_piece_values(board, piece_values):
 #     pass
 
 
-# fen = "r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 3 3"
-fen = "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4"
+fen = "r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 3 3"
+# fen = "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4"
 
 board = chess.Board(fen)
 print(board)
-
+print(f"depth: {DEPTH}\nscore: {evaluate_board(board)}")
 
 piece_values = analyze_piece_values(board)
 print_piece_values(board, piece_values)
 
 
-engine.quit()
+ENGINE.quit()
